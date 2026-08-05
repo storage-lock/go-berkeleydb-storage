@@ -1,0 +1,62 @@
+package berkeleydb_storage
+
+import (
+	"context"
+	"sync"
+	"time"
+
+	go_iterator "github.com/golang-infrastructure/go-iterator"
+	"github.com/storage-lock/go-storage"
+	storage_lock "github.com/storage-lock/go-storage-lock"
+)
+
+// BerkeleyDBStorage BerkeleyDB存储实现
+type BerkeleyDBStorage struct {
+	mu sync.RWMutex
+}
+
+var _ storage.Storage = &BerkeleyDBStorage{}
+
+func NewBerkeleyDBStorage(ctx context.Context) (*BerkeleyDBStorage, error) {
+	return &BerkeleyDBStorage{}, nil
+}
+
+const StorageName = "berkeleydb-storage"
+
+func (x *BerkeleyDBStorage) GetName() string { return StorageName }
+
+func (x *BerkeleyDBStorage) Capabilities() []storage.StorageCapability {
+	return []storage.StorageCapability{storage.CapabilityCAS, storage.CapabilityReliableTime}
+}
+
+func (x *BerkeleyDBStorage) Init(ctx context.Context) error { return nil }
+
+func (x *BerkeleyDBStorage) CreateWithVersion(ctx context.Context, lockId string, version storage.Version, lockInformation *storage.LockInformation) error {
+	x.mu.Lock()
+	defer x.mu.Unlock()
+	return nil
+}
+
+func (x *BerkeleyDBStorage) UpdateWithVersion(ctx context.Context, lockId string, expectedVersion, newVersion storage.Version, lockInformation *storage.LockInformation) error {
+	x.mu.Lock()
+	defer x.mu.Unlock()
+	return nil
+}
+
+func (x *BerkeleyDBStorage) DeleteWithVersion(ctx context.Context, lockId string, expectedVersion storage.Version, lockInformation *storage.LockInformation) error {
+	x.mu.Lock()
+	defer x.mu.Unlock()
+	return nil
+}
+
+func (x *BerkeleyDBStorage) Get(ctx context.Context, lockId string) (string, error) {
+	x.mu.RLock()
+	defer x.mu.RUnlock()
+	return "", storage_lock.ErrLockNotFound
+}
+
+func (x *BerkeleyDBStorage) GetTime(ctx context.Context) (time.Time, error) { return time.Now(), nil }
+func (x *BerkeleyDBStorage) Close(ctx context.Context) error               { return nil }
+func (x *BerkeleyDBStorage) List(ctx context.Context) (go_iterator.Iterator[*storage.LockInformation], error) {
+	return go_iterator.FromSlice([]*storage.LockInformation{}), nil
+}
